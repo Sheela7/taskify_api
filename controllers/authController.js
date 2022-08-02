@@ -1,10 +1,34 @@
 const userModel = require('../models/user.js');
 
-module.exports.signUpUser = async (req, res) => {
-    const userName = req.body.userName;
-    const email = req.body.email;
+//TO DO: Take user details.
+// TO DO: Check error if exists in user input
+// TO DO: Check if email and username already exists in db
+// TO DO: set new user if not exist
 
-    res.json({"message":"Complted"})
+
+
+module.exports.signUpUser = async (req, res) => {
+    const userEmail = req.body.email;
+    const userName = req.body.name;
+    const userPassword = req.body.password
+
+    let errors = []
+
+    if(userEmail==undefined){
+        errors.push("Please enter user email")
+    }
+    if(userName==undefined){
+        errors.push("Please enter user name")
+    }
+    if(userPassword==undefined){
+        errors.push("Please enter user password")
+    }
+    if(errors.length > 0){
+        throw errors
+    } 
+    else{
+        
+    }
 }
 
 
