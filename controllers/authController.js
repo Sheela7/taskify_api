@@ -63,52 +63,50 @@ module.exports.signUpUser = async (req, res) => {
 
 module.exports.verifyEmail = async (req, res) => {
     // Taking User's Email and OTP
-    const userEmail = req.body.email;
+    const email = req.body.email;
     const OTP = req.body.otp;
 
     let errors = [];
 
     // Checking if any null data is present or not
-    if (userEmail == undefined || userEmail == "") {
+    if (userEmail == undefined || email == "") {
         errors.push('Please Provide your email.');
     }
 
     if (OTP == undefined || OTP == "") {
-        errors.push('Please Enter OTP.');
-        // errors.push('Please Enter your OTP.');
+        errors.push('Please Enter your OTP.');
     }
 
-    if ( errors.length > 0 ) { 
+    if (errors.length > 0) {
         throw errors;
-      
+
     } else {
-        
-            // Check if Email matched with Database
-    const emailData =  userModel.findOne({email: userEmail});
-    console.log(`${emailData}`)
+        // Check if Email matched with Database
+        const emailData = await userModel.findOne({ email: email });
+        console.log(emailData);
 
-    if (emailData == null) {
-        throw 'Your Email is not Registered.';
-    }
-    if (emailData.isVerified == true) {
-        throw "Your email is already verified."
-    }
-    else {
-        // Checking if provided OTP match with OTP in DB
-        if (OTP != emailData.otp) {
-            throw 'your otp is not match.';
-        } else {
-            await userModel.findByIdAndUpdate(emailData._id , {
-                isVerified: true
-            });
+        if (emailData == null) {
+            throw 'Your Email is not Registered.';
         }
+        if (emailData.isVerified == true) {
+            throw "Your email is already verified."
+        }
+        else {
+            // Checking if provided OTP match with OTP in DB
+            if (OTP != emailData.otp) {
+                throw 'your otp is not match.';
+            } else {
+                await userModel.findByIdAndUpdate(emailData._id, {
+                    isVerified: true
+                });
+            }
 
-        res.json({
-            "status": "Success",
-            "message": "Verification Complete.",
-            "data":null
-        })
-    }
+            res.json({
+                "status": "Success",
+                "message": "Verification Complete.",
+                "data": null
+            })
+        }
     }
 
 }
