@@ -61,10 +61,10 @@ module.exports.signUpUser = async (req, res) => {
 }
 
 
-module.exports.verifyEmail = (req, res) => {
+module.exports.verifyEmail = async (req, res) => {
     // Taking User's Email and OTP
     const userEmail = req.body.email;
-    const otp = req.body.otp;
+    const OTP = req.body.otp;
 
     let errors = [];
 
@@ -73,18 +73,19 @@ module.exports.verifyEmail = (req, res) => {
         errors.push('Please Provide your email.');
     }
 
-    if (otp == undefined || otp == "") {
-        errors.push('Please Enter ydsdsd.');
+    if (OTP == undefined || OTP == "") {
+        errors.push('Please Enter OTP.');
         // errors.push('Please Enter your OTP.');
     }
 
-    if ( errors.length > 0 ) {  console.log(`the length of error is ${errors.length}`);
-    console.log("hello heree");  throw "hiiiii  ";
+    if ( errors.length > 0 ) { 
+        throw errors;
       
     } else {
         
             // Check if Email matched with Database
-    const emailData =  userModel.findOne({ email: userEmail });
+    const emailData =  userModel.findOne({email: userEmail});
+    console.log(`${emailData}`)
 
     if (emailData == null) {
         throw 'Your Email is not Registered.';
@@ -94,13 +95,18 @@ module.exports.verifyEmail = (req, res) => {
     }
     else {
         // Checking if provided OTP match with OTP in DB
-        if (otp != emailData.otp) {
+        if (OTP != emailData.otp) {
             throw 'your otp is not match.';
+        } else {
+            await userModel.findByIdAndUpdate(emailData._id , {
+                isVerified: true
+            });
         }
 
         res.json({
             "status": "Success",
-            "message": "Verification Complete."
+            "message": "Verification Complete.",
+            "data":null
         })
     }
     }
