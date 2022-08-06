@@ -1,6 +1,7 @@
 const userModel = require('../models/user.js');
 const otpService = require(`../services/otp.js`);
 const hashPassword = require(`../services/hash_password.js`);
+const user = require('../models/user.js');
 
 
 
@@ -51,11 +52,19 @@ module.exports.signUpUser = async (req, res) => {
             password: hashedPassword,
             otp: generatedOTP
         });
+     
+    const newData = {
+            _id: userData._id,
+            name: userData.name,
+            email: userData.email,
+            // password: userData.password,
+            isVerified: userData.isVerified
+        }
 
         res.json({
             "status": "Success",
             "message": "Registration Complete",
-            "data": userData
+            "data": newData
         });
     }
 }
@@ -69,21 +78,18 @@ module.exports.verifyEmail = async (req, res) => {
     let errors = [];
 
     // Checking if any null data is present or not
-    if (userEmail == undefined || email == "") {
+    if (email == undefined || email == "") {
         errors.push('Please Provide your email.');
     }
 
     if (OTP == undefined || OTP == "") {
         errors.push('Please Enter your OTP.');
     }
-
     if (errors.length > 0) {
         throw errors;
-
     } else {
         // Check if Email matched with Database
         const emailData = await userModel.findOne({ email: email });
-        console.log(emailData);
 
         if (emailData == null) {
             throw 'Your Email is not Registered.';
