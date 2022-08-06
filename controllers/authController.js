@@ -20,6 +20,11 @@ module.exports.signUpUser = async (req, res) => {
 
     if (userEmail == undefined || userEmail == "") {
         errors.push('Please provide an email.');
+    } else {
+        const isEmailValid = checkEmailValidity(userEmail);
+        if (!isEmailValid) {
+            errors.push('Please provide a valid email.');
+        }
     }
 
     if (userPassword == undefined || userPassword == "") {
@@ -80,6 +85,11 @@ module.exports.verifyEmail = async (req, res) => {
     // Checking if any null data is present or not
     if (email == undefined || email == "") {
         errors.push('Please Provide your email.');
+    } else {
+        const isEmailValid = checkEmailValidity(email);
+        if (!isEmailValid) {
+            errors.push('Please provide a valid email.');
+        }
     }
 
     if (OTP == undefined || OTP == "") {
@@ -115,4 +125,11 @@ module.exports.verifyEmail = async (req, res) => {
         }
     }
 
+}
+
+const checkEmailValidity = (email) => {
+    const re = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+
+    const isEmailValid = re.test(String(email).toLowerCase());
+    return isEmailValid;
 }
