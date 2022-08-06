@@ -17,14 +17,20 @@ const userSchema = new mongoose.Schema({
         required: true
     },
 
-    created_date: {
-        type: Date,
-        default: date.now
-    }, 
+    // created_date: {
+    //     type: String,
+    //     default: Date.now.toString
+    // }, 
 
     otp: {
-        type: Number,
+        type: String,
         required: true
+    },
+
+    isVerified: {
+        type: Boolean,
+        default: false
+
     }
 })
 
