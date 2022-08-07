@@ -4,6 +4,6 @@ const errorHandler = require('../middleware/error_handler.js');
 
 router.post('/signup', errorHandler(Controller.signUpUser));
 router.post('/verify', errorHandler(Controller.verifyEmail));
-// router.post('/signin', Controller.signIn)
+router.post('/signin', errorHandler(Controller.signIn));
 
 module.exports = router;

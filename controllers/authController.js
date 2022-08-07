@@ -57,8 +57,8 @@ module.exports.signUpUser = async (req, res) => {
             password: hashedPassword,
             otp: generatedOTP
         });
-     
-    const newData = {
+
+        const newData = {
             _id: userData._id,
             name: userData.name,
             email: userData.email,
@@ -127,6 +127,60 @@ module.exports.verifyEmail = async (req, res) => {
 
 }
 
+//====>>>> Sign In <<<<====//
+module.exports.signIn = async (req, res) => {
+    const email = req.body.email;
+    const password = req.body.password;
+
+    let errors = [];
+
+    // Checking IF Entered data is null or not
+    if (email == undefined || email == "") {
+        errors.push('Please provide a email.');
+    } else {
+        const isEmailValid = checkEmailValidity(email);
+        if (!isEmailValid) {
+            errors.push('Please provide a valid email.');
+        }
+    }
+
+    if (password == undefined || password == "") {
+        errors.push('Please Enter your password.');
+    }
+
+    if (errors.length > 0) {
+        throw errors;
+    } else {
+
+        const emailData = await userModel.findOne({ email: email });
+
+        if (emailData == null) {
+            throw "This Email is not Registered.";
+        }
+
+        if (emailData.isVerified != true) {
+            throw "This Email is not verified";
+        } else {
+            const isCorrectPassword = await hashPassword.comparePassword(password, emailData.password);
+            if ( isCorrectPassword == false) {
+                throw "Your password is wrong.";
+            } else {
+           
+                res.json({
+                    "status": "Success",
+                    "message": "Log in successfull.",
+                    "data": null
+                });
+            }
+        }
+    }
+
+
+
+
+}
+
+// Checking Email
 const checkEmailValidity = (email) => {
     const re = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
 

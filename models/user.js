@@ -17,10 +17,10 @@ const userSchema = new mongoose.Schema({
         required: true
     },
 
-    // created_date: {
-    //     type: String,
-    //     default: Date.now.toString
-    // }, 
+    created_date: {
+        type: String,
+        default: new Date.toISOString()
+    }, 
 
     otp: {
         type: String,
