@@ -1,6 +1,6 @@
 const userModel = require('../models/user.js');
 const otpService = require("../services/otp.js");
-// const passwordHash = require("../services/hashed_password.js");
+const passwordHash = require("../services/hashed_password.js");
 const emailService = require("../services/email_service.js");
 //TO DO: Take user details.
 // TO DO: Check error if exists in user input
@@ -45,13 +45,13 @@ module.exports.signUpUser = async (req, res) => {
         //each tham ma otpService.generate() garyo vani naya otp generate hunxa so, eslai euta kunai variable maa haleraa reuse garda same otp data janxa 
      const generatedOTP = otpService.generateOTP()
      console.log(generatedOTP)
-    //  const generatedHashedPassword = await passwordHash.hashPassword(password);
-    //  console.log(generatedHashedPassword)
+     const generatedHashedPassword = await passwordHash.hashPassword(userPassword);
+     console.log(generatedHashedPassword)
         const userData = await userModel.create({
             name: userName,
             email:  userEmail,
-            password: userPassword,
-            // password: generatedHashedPassword,
+            // password: userPassword,
+            password: generatedHashedPassword,
             otp: generatedOTP 
     });
     console.log(userData)
@@ -63,7 +63,7 @@ module.exports.signUpUser = async (req, res) => {
 
 
 
-module.exports.verifyEmail = (req, res) => {
+module.exports.verifyEmail = async (req, res) => {
     const OTP = req.body.otp;
     const Email = req.body.email;
     
@@ -80,8 +80,8 @@ module.exports.verifyEmail = (req, res) => {
     } else{
         const emailData = await userModel.findOne({email: Email});
          if(emailData != null){
-            const verificationData = await userModel.t
-            OTP: otp
+            // const verificationData = await userModel.t
+            // OTP: otp
     }
 
 }}}
