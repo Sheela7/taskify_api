@@ -2,8 +2,8 @@ const userModel = require('../models/user.js');
 const otpService = require(`../services/otp.js`);
 const hashPassword = require(`../services/hash_password.js`);
 const user = require('../models/user.js');
-
-
+const token = require(`../middleware/jwt_handler.js`);
+const emailService = require(`../services/mail_service.js`);
 
 module.exports.signUpUser = async (req, res) => {
     // Taking User's data
@@ -57,6 +57,9 @@ module.exports.signUpUser = async (req, res) => {
             password: hashedPassword,
             otp: generatedOTP
         });
+
+        // Send otp to email
+        const sendOtp = emailService.sendOtpMail(userData.email, userData.otp);
 
         const newData = {
             _id: userData._id,
@@ -165,11 +168,17 @@ module.exports.signIn = async (req, res) => {
             if ( isCorrectPassword == false) {
                 throw "Your password is wrong.";
             } else {
-           
+
+                const accessToken = token.createNewAccessToken(emailData.email);
+                const refreshToken = token.createNewRefreshToken(emailData.email);
+
                 res.json({
                     "status": "Success",
                     "message": "Log in successfull.",
-                    "data": null
+                    "data": {
+                        "access-token": accessToken,
+                        "refresh-token": refreshToken
+                    }
                 });
             }
         }
