@@ -64,8 +64,6 @@ const signUpValidation = (userName, userEmail, userPassword) => {
   return errors;
 };
 
-
-
 const createUser = async (userName, userEmail, userPassword) => {
   //each tham ma otpService.generate() garyo vani naya otp generate hunxa so, eslai euta kunai variable maa haleraa reuse garda same otp data janxa
   const generatedOTP = otpService.generateOTP();
@@ -124,15 +122,6 @@ module.exports.verifyEmail = async (req, res) => {
   
 }
 
-
-const checkEmailValidity = (email) => {
-    const re =
-      /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
-  
-    const isEmailValid = re.test(String(email).toLowerCase());
-    return isEmailValid;
-  };
-
   const ValidateVerifyEmailData=(Email,OTP)=>{
     let errors = [];
     if (Email == undefined || Email=="") {
@@ -149,3 +138,59 @@ const checkEmailValidity = (email) => {
     return errors
   }
 
+const checkEmailValidity = (email) => {
+  const re =
+    /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+
+  const isEmailValid = re.test(String(email).toLowerCase());
+  return isEmailValid;
+};
+
+
+//Login to system code:
+module.exports.loginUser = async (req, res) => {
+  const userEmail = req.body.email;
+  const userPassword = req.body.password;
+  const err = loginValidation(userEmail, userPassword);
+  if (err.length > 0) {
+    throw err;
+  } else { 
+    const emailData = await userModel.findOne({ email: userEmail });
+    if(emailData == null){
+      throw "This email is not registered"
+    }
+    if (emailData.isVerified == false) {
+      throw "This email is not verified"
+    }
+    const generatedHashedPassword = await passwordHash.verifyPasswordHash(userPassword,emailData.password );
+    if (generatedHashedPassword == false){
+      throw "Your password is incorrect"
+    } else{
+      const userData = {
+        _id: emailData._id,
+        name: emailData.name,
+        email: emailData.email,
+        created: emailData.created,
+        isVerified:emailData.isVerified,
+      };
+      res.json({"status":"success", "message": "Login Succcessfully", "data":userData})
+    }
+}
+}
+const loginValidation = (userEmail, userPassword) => {
+  let errors = [];
+
+  if (userEmail == undefined || userEmail == "") {
+    
+    errors.push("Please provide user email");
+  } else {
+    const isEmailValid = checkEmailValidity(userEmail);
+    if (!isEmailValid) {
+      errors.push("Please provide valid email");
+    }
+  }
+  if (userPassword == undefined || userPassword == "") {
+    errors.push("Please enter user password");
+  }
+  return errors;
+};
