@@ -31,7 +31,8 @@ const userSchema = new mongoose.Schema({
         type: Boolean,
         default: false
 
-    }
+    },
+  
 })
 
 module.exports = mongoose.model('users', userSchema)

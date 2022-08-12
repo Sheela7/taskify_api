@@ -183,10 +183,6 @@ module.exports.signIn = async (req, res) => {
             }
         }
     }
-
-
-
-
 }
 
 // Checking Email

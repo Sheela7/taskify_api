@@ -1,6 +1,5 @@
 const jwt = require(`jsonwebtoken`);
 
-
 module.exports.createNewAccessToken = (userEmail) => {
     const accessToken = jwt.sign(
         {"email": userEmail},
@@ -19,4 +18,13 @@ module.exports.createNewRefreshToken = (userEmail) => {
         );
 
     return refreshToken;
+}
+
+module.exports.validateToken = async (token) => {
+    try {
+        const jwtVerification = await jwt.verify(token, process.env.ACCESS_TOKEN_SECRET);
+        return jwtVerification;
+    } catch (err) {
+        console.log(err)
+    }
 }
