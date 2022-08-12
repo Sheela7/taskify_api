@@ -4,6 +4,8 @@ const hashPassword = require(`../services/hash_password.js`);
 const user = require('../models/user.js');
 const token = require(`../middleware/jwt_handler.js`);
 const emailService = require(`../services/mail_service.js`);
+const jwtHandler = require('../middleware/jwt_handler.js');
+
 
 module.exports.signUpUser = async (req, res) => {
     // Taking User's data
@@ -171,7 +173,6 @@ module.exports.signIn = async (req, res) => {
 
                 const accessToken = token.createNewAccessToken(emailData.email);
                 const refreshToken = token.createNewRefreshToken(emailData.email);
-
                 res.json({
                     "status": "Success",
                     "message": "Log in successfull.",
