@@ -177,8 +177,8 @@ module.exports.signIn = async (req, res) => {
                     "status": "Success",
                     "message": "Log in successfull.",
                     "data": {
-                        "access-token": accessToken,
-                        "refresh-token": refreshToken
+                        "accessToken": accessToken,
+                        "refreshToken": refreshToken
                     }
                 });
             }
