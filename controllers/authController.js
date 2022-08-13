@@ -16,10 +16,10 @@ module.exports.signUpUser = async (req, res) => {
 
   const err = signUpValidation(userName, userEmail, userPassword);
   //Difference between return error and throw errors
-//It depends on where you want your control. throw immediately hands control back 
-//to the caller: See MDN: "and control will be passed to the first catch block in the call stack. 
-//If no catch block exists among caller functions, the program will terminate.", while if you 
-//return a new Error, you have to handle it a different way, in another location 
+  //It depends on where you want your control. throw immediately hands control back
+  //to the caller: See MDN: "and control will be passed to the first catch block in the call stack.
+  //If no catch block exists among caller functions, the program will terminate.", while if you
+  //return a new Error, you have to handle it a different way, in another location
   if (err.length > 0) {
     throw err;
   } else {
@@ -44,12 +44,11 @@ module.exports.signUpUser = async (req, res) => {
     });
   }
 };
-//differn between errors.push in errors array and throe is: 
+//differn between errors.push in errors array and throe is:
 const signUpValidation = (userName, userEmail, userPassword) => {
   let errors = [];
 
   if (userEmail == undefined || userEmail == "") {
-    
     errors.push("Please provide user email");
   } else {
     const isEmailValid = checkEmailValidity(userEmail);
@@ -76,7 +75,7 @@ const createUser = async (userName, userEmail, userPassword) => {
     password: generatedHashedPassword,
     otp: generatedOTP,
   });
-//   console.log(userData)
+  //   console.log(userData)
   const newUserData = {
     _id: userData._id,
     name: userData.name,
@@ -89,58 +88,59 @@ const createUser = async (userName, userEmail, userPassword) => {
   return newUserData;
 };
 
-
-
 module.exports.verifyEmail = async (req, res) => {
   const OTP = req.body.otp;
   const Email = req.body.email;
 
-
-  const err = ValidateVerifyEmailData(Email,OTP);
+  const err = ValidateVerifyEmailData(Email, OTP);
   if (err.length > 0) {
     throw err;
   } else {
     const emailData = await userModel.findOne({ email: Email });
-  
-  if(emailData == null){
-    throw "This email is not registered"
-  }
-  if (emailData.isVerified == true) {
-    throw "This email is already verified"
-  }
-  if (emailData.otp != OTP ){
-    throw "This OTP is incorrect"
-  } else {
-   const verifiedEmail = await userModel.findByIdAndUpdate(emailData._id, {isVerified: true});
-   const newUserData = {
-    _id: verifiedEmail._id,
-    name: verifiedEmail.name,
-    email: verifiedEmail.email,
-    created: verifiedEmail.created,
-    isVerified:true,
-  };
-   res.json({"status":"success", "message": "Userverified Succcessfully", "data": newUserData})
-  }}
-  
-}
 
-  const ValidateVerifyEmailData=(Email,OTP)=>{
-    let errors = [];
-    if (Email == undefined || Email=="") {
-      errors.push("Please provide user email");
+    if (emailData == null) {
+      throw "This email is not registered";
+    }
+    if (emailData.isVerified == true) {
+      throw "This email is already verified";
+    }
+    if (emailData.otp != OTP) {
+      throw "This OTP is incorrect";
     } else {
-      const isEmailValid = checkEmailValidity(Email);
-      if (!isEmailValid) {
-        errors.push("Please provide valid email");
-      }
+      const verifiedEmail = await userModel.findByIdAndUpdate(emailData._id, {
+        isVerified: true,
+      });
+      const newUserData = {
+        _id: verifiedEmail._id,
+        name: verifiedEmail.name,
+        email: verifiedEmail.email,
+        created: verifiedEmail.created,
+        isVerified: true,
+      };
+      res.json({
+        status: "success",
+        message: "Userverified Succcessfully",
+        data: newUserData,
+      });
     }
-    if(OTP==undefined || OTP==""){
-      errors.push("Please provide user otp");
-    }
-    return errors
   }
+};
 
-
+const ValidateVerifyEmailData = (Email, OTP) => {
+  let errors = [];
+  if (Email == undefined || Email == "") {
+    errors.push("Please provide user email");
+  } else {
+    const isEmailValid = checkEmailValidity(Email);
+    if (!isEmailValid) {
+      errors.push("Please provide valid email");
+    }
+  }
+  if (OTP == undefined || OTP == "") {
+    errors.push("Please provide user otp");
+  }
+  return errors;
+};
 
 //Login to system code:
 module.exports.loginUser = async (req, res) => {
@@ -149,39 +149,36 @@ module.exports.loginUser = async (req, res) => {
   const err = loginValidation(userEmail, userPassword);
   if (err.length > 0) {
     throw err;
-  } else { 
+  } else {
     const emailData = await userModel.findOne({ email: userEmail });
-    if(emailData == null){
-      throw "This email is not registered"
+    if (emailData == null) {
+      throw "This email is not registered";
     }
     if (emailData.isVerified == false) {
-      throw "This email is not verified"
+      throw "This email is not verified";
     }
-    const generatedHashedPassword = await passwordHash.verifyPasswordHash(userPassword,emailData.password );
-    if (generatedHashedPassword == false){
-      throw "Your password is incorrect"}
-    // } else{
-      // const userData = {
-      //   _id: emailData._id,
-      //   name: emailData.name,
-      //   email: emailData.email,
-      //   created: emailData.created,
-      //   isVerified:emailData.isVerified,
-      // };
-//create and assign token
-const token = jwt.sign({_id: user._id}, process.env.TOKEN);
-res.header('auth-token',token).send(token)
-
-
-      res.json({"status":"success", "message": "Login Succcessfully", "data":userData})
+    const generatedHashedPassword = await passwordHash.verifyPasswordHash(
+      userPassword,
+      emailData.password
+    );
+    if (generatedHashedPassword == false) {
+      throw "Your password is incorrect";
+    } else {
+      const accessToken = token.createNewAccessToken(emailData.email);
+      const refreshToken = token.createNewRefreshToken(emailData.email);
+      res.json({
+        status: "success",
+        message: "Login Succcessfully",
+        data: { "access-token": accessToken, refreshToken: refreshToken },
+      });
     }
-}
+  }
+};
 // }
 const loginValidation = (userEmail, userPassword) => {
   let errors = [];
 
   if (userEmail == undefined || userEmail == "") {
-    
     errors.push("Please provide user email");
   } else {
     const isEmailValid = checkEmailValidity(userEmail);
@@ -194,7 +191,6 @@ const loginValidation = (userEmail, userPassword) => {
   }
   return errors;
 };
-
 
 const checkEmailValidity = (email) => {
   const re =
