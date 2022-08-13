@@ -2,6 +2,8 @@ const userModel = require("../models/user.js");
 const otpService = require("../services/otp.js");
 const passwordHash = require("../services/hashed_password.js");
 const emailService = require("../services/email_service.js");
+const jwt = require("jsonwebtoken");
+const user = require("../models/user.js");
 //TO DO: Take user details.
 // TO DO: Check error if exists in user input
 // TO DO: Check if email and username already exists in db
@@ -138,13 +140,6 @@ module.exports.verifyEmail = async (req, res) => {
     return errors
   }
 
-const checkEmailValidity = (email) => {
-  const re =
-    /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
-
-  const isEmailValid = re.test(String(email).toLowerCase());
-  return isEmailValid;
-};
 
 
 //Login to system code:
@@ -164,19 +159,24 @@ module.exports.loginUser = async (req, res) => {
     }
     const generatedHashedPassword = await passwordHash.verifyPasswordHash(userPassword,emailData.password );
     if (generatedHashedPassword == false){
-      throw "Your password is incorrect"
-    } else{
-      const userData = {
-        _id: emailData._id,
-        name: emailData.name,
-        email: emailData.email,
-        created: emailData.created,
-        isVerified:emailData.isVerified,
-      };
+      throw "Your password is incorrect"}
+    // } else{
+      // const userData = {
+      //   _id: emailData._id,
+      //   name: emailData.name,
+      //   email: emailData.email,
+      //   created: emailData.created,
+      //   isVerified:emailData.isVerified,
+      // };
+//create and assign token
+const token = jwt.sign({_id: user._id}, process.env.TOKEN);
+res.header('auth-token',token).send(token)
+
+
       res.json({"status":"success", "message": "Login Succcessfully", "data":userData})
     }
 }
-}
+// }
 const loginValidation = (userEmail, userPassword) => {
   let errors = [];
 
@@ -193,4 +193,13 @@ const loginValidation = (userEmail, userPassword) => {
     errors.push("Please enter user password");
   }
   return errors;
+};
+
+
+const checkEmailValidity = (email) => {
+  const re =
+    /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+
+  const isEmailValid = re.test(String(email).toLowerCase());
+  return isEmailValid;
 };
