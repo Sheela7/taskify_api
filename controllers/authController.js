@@ -2,7 +2,7 @@ const userModel = require('../models/user.js');
 const otpService = require(`../services/otp.js`);
 const hashPassword = require(`../services/hash_password.js`);
 const user = require('../models/user.js');
-const token = require(`../middleware/jwt_handler.js`);
+const token = require(`../services/jwt_handler.js`);
 const emailService = require(`../services/mail_service.js`);
 
 module.exports.signUpUser = async (req, res) => {
@@ -62,7 +62,6 @@ module.exports.signUpUser = async (req, res) => {
         const sendOtp = emailService.sendOtpMail(userData.email, userData.otp);
 
         const newData = {
-            _id: userData._id,
             name: userData.name,
             email: userData.email,
             // password: userData.password,
@@ -191,4 +190,19 @@ const checkEmailValidity = (email) => {
 
     const isEmailValid = re.test(String(email).toLowerCase());
     return isEmailValid;
+}
+
+// ACCESS TOKEN GENERATOR
+module.exports.accessTokenGenerator = async (req, res) => {
+
+    const userEmail = req.body.email;
+    const newAccessToken = await token.createNewAccessToken(userEmail);
+    
+    res.json({
+        "status": "Success",
+        "message": "Successfully generated Access token",
+        "data": {
+            "accessToken": newAccessToken
+        }
+    })
 }
