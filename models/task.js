@@ -1,7 +1,5 @@
 const mongoose = require('mongoose');
 
-// mongoose.connect(process.env.DATABASE_URL);
-
 const taskSchema = new mongoose.Schema({
     task: {
         type: String

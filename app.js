@@ -4,6 +4,7 @@ const mongoose = require('mongoose');
 const authRoute = require('./routes/authRoutes.js');
 const taskRoute = require('./routes/taskRoutes.js')
 
+//? TODO: MANISH KARKI: Status code as per error type
 
 const app = express()
 

@@ -2,9 +2,9 @@ const userModel = require('../models/user.js');
 const otpService = require(`../services/otp.js`);
 const hashPassword = require(`../services/hash_password.js`);
 const user = require('../models/user.js');
-const token = require(`../middleware/jwt_handler.js`);
+const token = require(`../services/jwt_handler.js`);
 const emailService = require(`../services/mail_service.js`);
-const jwtHandler = require('../middleware/jwt_handler.js');
+const jwtHandler = require('../services/jwt_handler.js');
 
 
 module.exports.signUpUser = async (req, res) => {
@@ -61,7 +61,7 @@ module.exports.signUpUser = async (req, res) => {
         });
 
         // Send otp to email
-        const sendOtp = emailService.sendOtpMail(userData.email, userData.otp);
+        // const sendOtp =await emailService.sendOtpMail(userData.email, userData.otp);
 
         const newData = {
             _id: userData._id,
@@ -167,7 +167,7 @@ module.exports.signIn = async (req, res) => {
             throw "This Email is not verified";
         } else {
             const isCorrectPassword = await hashPassword.comparePassword(password, emailData.password);
-            if ( isCorrectPassword == false) {
+            if (isCorrectPassword == false) {
                 throw "Your password is wrong.";
             } else {
 
@@ -184,6 +184,27 @@ module.exports.signIn = async (req, res) => {
             }
         }
     }
+}
+
+module.exports.refreshTokenController =async (req, res) => {
+    const bearerToken = req.headers['authorization'];
+    const refreshToken = bearerToken.split(' ')[1];
+
+    if (refreshToken == undefined || refreshToken == "") {
+        throw 'refresh token is required.'
+    }
+
+    const userEmail = await jwtHandler.validateRefreshToken(refreshToken); 
+    const accessToken = await jwtHandler.createNewAccessToken(userEmail);
+    res.json({
+        "status":"success",
+        "message": "Successfully generated access token",
+        "data": {
+            "accessToken": accessToken,
+            "refreshToken": refreshToken
+        }
+    })
+
 }
 
 // Checking Email
