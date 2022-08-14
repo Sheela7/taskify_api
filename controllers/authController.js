@@ -2,8 +2,7 @@ const userModel = require("../models/user.js");
 const otpService = require("../services/otp.js");
 const passwordHash = require("../services/hashed_password.js");
 const emailService = require("../services/email_service.js");
-const jwt = require("jsonwebtoken");
-const user = require("../models/user.js");
+const token = require('../services/jwt_handler.js')
 //TO DO: Take user details.
 // TO DO: Check error if exists in user input
 // TO DO: Check if email and username already exists in db
@@ -149,6 +148,7 @@ module.exports.loginUser = async (req, res) => {
   const err = loginValidation(userEmail, userPassword);
   if (err.length > 0) {
     throw err;
+
   } else {
     const emailData = await userModel.findOne({ email: userEmail });
     if (emailData == null) {
@@ -199,3 +199,27 @@ const checkEmailValidity = (email) => {
   const isEmailValid = re.test(String(email).toLowerCase());
   return isEmailValid;
 };
+
+
+module.exports.generateNewAccessToken = async (req, res) => {
+  
+  const bearerToken = req.headers["authorization"];
+  if (bearerToken == undefined || bearerToken == "" || bearerToken.trim() == "") {
+    throw "Refresh token is required";
+  }
+
+  const refreshToken = bearerToken.split(" ")[1];
+
+  const userEmail = await token.validateRefreshToken(refreshToken);
+
+  // New Tokens 
+  const newAccessToken = token.createNewAccessToken(userEmail);
+
+  res.json({
+    "status": "success",
+    "message": "Successfully access token generated.",
+    "data": {
+      "newAccessToken": newAccessToken
+    }
+  });
+}

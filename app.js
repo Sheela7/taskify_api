@@ -15,7 +15,7 @@ mongoose.connect(process.env.DATABASE_URL, {
   });
 
 app.use('/auth', authRoute);
-app.use('/task', taskRoute);
+app.use('/', taskRoute);
 
 
 

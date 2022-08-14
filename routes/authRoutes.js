@@ -4,6 +4,7 @@ const errorHandler =require("../middleware/error_handler.js")
 router.post('/signup', errorHandler(Controller.signUpUser));
 router.post('/verify', errorHandler(Controller.verifyEmail));
 router.post('/login', errorHandler(Controller.loginUser));
+router.post('/generateToken', errorHandler(Controller.generateNewAccessToken));
 const jwt = require('jsonwebtoken');
 
 
