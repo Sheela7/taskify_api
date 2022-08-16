@@ -4,7 +4,7 @@ module.exports.createNewAccessToken = (userEmail) => {
     const accessToken = jwt.sign(
         {"email": userEmail},
         process.env.ACCESS_TOKEN_SECRET,
-        {expiresIn: "600s"}
+        {expiresIn: "1d"}
         );
 
     return accessToken;
@@ -25,7 +25,7 @@ module.exports.validateAccessToken = (accessToken) => {
         const jwtVerification = jwt.verify(accessToken, process.env.ACCESS_TOKEN_SECRET);
         return jwtVerification.email;
     } catch (err) {
-        if(err.message == "jwt malformed") {
+        if(err.message == "jwt malformed" || err.message == "invalid token") {
             throw 'Please provide a valid access token.'
         } else if (err.message == "jwt expired") {
             throw 'The token is expired.'

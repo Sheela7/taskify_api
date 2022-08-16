@@ -1,7 +1,6 @@
 const userModel = require('../models/user.js');
 const otpService = require(`../services/otp.js`);
 const hashPassword = require(`../services/hash_password.js`);
-const user = require('../models/user.js');
 const token = require(`../services/jwt_handler.js`);
 const emailService = require(`../services/mail_service.js`);
 
@@ -10,26 +9,9 @@ module.exports.signUpUser = async (req, res) => {
     const userName = req.body.name;
     const userEmail = req.body.email;
     const userPassword = req.body.password;
+    const userGender = req.body.gender;
 
-    let errors = [];
-
-    // CHecking if user entered any null data
-    if (userName == undefined || userName == "") {
-        errors.push('Please provide a user name.');
-    }
-
-    if (userEmail == undefined || userEmail == "") {
-        errors.push('Please provide an email.');
-    } else {
-        const isEmailValid = checkEmailValidity(userEmail);
-        if (!isEmailValid) {
-            errors.push('Please provide a valid email.');
-        }
-    }
-
-    if (userPassword == undefined || userPassword == "") {
-        errors.push('Please enter a password.')
-    }
+    const errors = validateSignUpData(userName, userEmail, userPassword, userGender);
 
     if (errors.length > 0) {
         throw errors;
@@ -55,16 +37,17 @@ module.exports.signUpUser = async (req, res) => {
             name: userName,
             email: userEmail,
             password: hashedPassword,
+            gender: userGender,
             otp: generatedOTP
         });
 
         // Send otp to email
-        const sendOtp = emailService.sendOtpMail(userData.email, userData.otp);
+        // const sendOtp = emailService.sendOtpMail(userData.email, userData.otp);
 
         const newData = {
             name: userData.name,
             email: userData.email,
-            // password: userData.password,
+            gender: userData.gender,
             isVerified: userData.isVerified
         }
 
@@ -76,27 +59,14 @@ module.exports.signUpUser = async (req, res) => {
     }
 }
 
-
+//====>>>> Verify email <<<<====//
 module.exports.verifyEmail = async (req, res) => {
     // Taking User's Email and OTP
     const email = req.body.email;
     const OTP = req.body.otp;
 
-    let errors = [];
+    const errors = validateVerificationData(email, OTP);
 
-    // Checking if any null data is present or not
-    if (email == undefined || email == "") {
-        errors.push('Please Provide your email.');
-    } else {
-        const isEmailValid = checkEmailValidity(email);
-        if (!isEmailValid) {
-            errors.push('Please provide a valid email.');
-        }
-    }
-
-    if (OTP == undefined || OTP == "") {
-        errors.push('Please Enter your OTP.');
-    }
     if (errors.length > 0) {
         throw errors;
     } else {
@@ -134,21 +104,7 @@ module.exports.signIn = async (req, res) => {
     const email = req.body.email;
     const password = req.body.password;
 
-    let errors = [];
-
-    // Checking IF Entered data is null or not
-    if (email == undefined || email == "") {
-        errors.push('Please provide a email.');
-    } else {
-        const isEmailValid = checkEmailValidity(email);
-        if (!isEmailValid) {
-            errors.push('Please provide a valid email.');
-        }
-    }
-
-    if (password == undefined || password == "") {
-        errors.push('Please Enter your password.');
-    }
+    const errors = checkSignInData(email, password);
 
     if (errors.length > 0) {
         throw errors;
@@ -164,7 +120,7 @@ module.exports.signIn = async (req, res) => {
             throw "This Email is not verified";
         } else {
             const isCorrectPassword = await hashPassword.comparePassword(password, emailData.password);
-            if ( isCorrectPassword == false) {
+            if (isCorrectPassword == false) {
                 throw "Your password is wrong.";
             } else {
 
@@ -184,20 +140,12 @@ module.exports.signIn = async (req, res) => {
     }
 }
 
-// Checking Email
-const checkEmailValidity = (email) => {
-    const re = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
-
-    const isEmailValid = re.test(String(email).toLowerCase());
-    return isEmailValid;
-}
-
 // ACCESS TOKEN GENERATOR
 module.exports.accessTokenGenerator = async (req, res) => {
 
     const userEmail = req.body.email;
     const newAccessToken = await token.createNewAccessToken(userEmail);
-    
+
     res.json({
         "status": "Success",
         "message": "Successfully generated Access token",
@@ -206,3 +154,80 @@ module.exports.accessTokenGenerator = async (req, res) => {
         }
     })
 }
+
+// Checking Email
+const checkEmailValidity = (email) => {
+    const re = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+
+    const isEmailValid = re.test(String(email).toLowerCase());
+    return isEmailValid;
+}
+
+// Checking If User's Input is Null or not
+const validateSignUpData = ( userName, userEmail, userPassword, userGender ) => {
+    
+    let errors = [];
+
+    // CHecking if user entered any null data
+    if (userName == undefined || userName == "" || userName.trim() == "") {
+        errors.push('Please provide a user name.');
+    }
+
+    if (userEmail == undefined || userEmail == "" || userEmail.trim() == "") {
+        errors.push('Please provide an email.');
+    } else {
+        const isEmailValid = checkEmailValidity(userEmail);
+        if (!isEmailValid) {
+            errors.push('Please provide a valid email.');
+        }
+    }
+
+    if (userPassword == undefined || userPassword == "" || userPassword.trim() == "") {
+        errors.push('Please enter a password.');
+    }
+
+    if ( userGender == undefined || userGender == "" || userGender.trim() == "" ) {
+        errors.push("Please prove your gender.");
+    }
+
+    return errors;
+    
+}
+
+const validateVerificationData = (email, OTP) => {
+    
+    let errors = [];
+
+    if (email == undefined || email == "") {
+        errors.push('Please Provide your email.');
+    } else {
+        const isEmailValid = checkEmailValidity(email);
+
+        if (!isEmailValid) {
+            errors.push('Please provide a valid email.');
+        }
+    }
+    if (OTP == undefined || OTP == "") {
+        errors.push('Please Enter your OTP.');
+    }
+
+    return errors
+}
+
+const checkSignInData = (email, password) => {
+    let errors = [];
+    if (email == undefined || email == "") {
+        errors.push('Please provide a email.');
+    } else {
+        const isEmailValid = checkEmailValidity(email);
+        if (!isEmailValid) {
+            errors.push('Please provide a valid email.');
+        }
+    }
+
+    if (password == undefined || password == "") {
+        errors.push('Please Enter your password.');
+    }
+
+    return errors;
+} 

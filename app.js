@@ -2,7 +2,8 @@ require('dotenv').config()
 const express = require('express');
 const mongoose = require('mongoose');
 const authRoute = require('./routes/authRoutes.js');
-const taskRoute = require('./routes/taskRoutes.js')
+const taskRoute = require('./routes/taskRoutes.js');
+const eventRoute = require(`./routes/eventRoutes.js`);
 
 
 const app = express()
@@ -15,9 +16,10 @@ mongoose.connect(process.env.DATABASE_URL, {
     useNewUrlParser: true
   });
 
+  // ROUTES MIDDLEWARE
 app.use('/auth', authRoute);
 app.use('/', taskRoute);
-
+app.use('/event', eventRoute);
 
 
 app.listen(port, () => console.info(`App listening on port ${port}`))

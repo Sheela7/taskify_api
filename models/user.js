@@ -11,6 +11,16 @@ const userSchema = new mongoose.Schema({
         type: String,
         required: true
     },
+    gender: {
+        type: String,
+        lowercase: true,
+        enum: [
+            'male', 
+            'female', 
+            'other'
+        ],
+        required: true
+    },
 
     password: {
         type: String,
@@ -20,7 +30,7 @@ const userSchema = new mongoose.Schema({
     created_date: {
         type: String,
         default: new Date().toISOString()
-    }, 
+    },
 
     otp: {
         type: String,
@@ -32,10 +42,7 @@ const userSchema = new mongoose.Schema({
         default: false
 
     },
-  
-})
 
-module.exports = mongoose.model('users', userSchema)
+});
 
-
-
+module.exports = mongoose.model('users', userSchema);
