@@ -8,7 +8,7 @@ module.exports.addEvent = async (req, res) => {
     const eventDate = req.body.eventDate;
     const repeat = req.body.repeat;
     const userEmail = req.body.email;
-
+    
     const emailData = await userModel.findOne({ email: userEmail });
 
     // VALIDATE THE DATA
