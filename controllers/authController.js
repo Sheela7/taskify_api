@@ -169,7 +169,7 @@ module.exports.loginUser = async (req, res) => {
       res.json({
         status: "success",
         message: "Login Succcessfully",
-        data: { "access-token": accessToken, refreshToken: refreshToken },
+        data: { "access-token": accessToken, "refreshToken": refreshToken },
       });
     }
   }

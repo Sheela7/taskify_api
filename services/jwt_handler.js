@@ -7,6 +7,7 @@ module.exports.createNewAccessToken = (userEmail) => {
         {expiresIn: "600s"}
     );
     return accessToken;
+    
 }
 module.exports.createNewRefreshToken = (userEmail) => {
     const refreshToken = jwt.sign(
@@ -42,3 +43,22 @@ module.exports.validateRefreshToken = (refreshToken) => {
         }
     }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
