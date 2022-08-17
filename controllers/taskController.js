@@ -3,7 +3,7 @@ const userModel = require('../models/user.js')
 const jwtHandler = require('../services/jwt_handler.js');
 
 module.exports.taskController = async (req, res) => {
-  const task = req.body.task;
+ 
 
   const bearerToken = req.headers["authorization"];
 
@@ -16,19 +16,22 @@ module.exports.taskController = async (req, res) => {
   const userEmail = await jwtHandler.validateAccessToken(accessToken);
 
   
-  const emailData = await userModel.findOne({email: userEmail});
+  const userData = await userModel.findOne({email: userEmail});
 
  // Task Works
+ const task = req.body.task;
     if(task == undefined || task == "" || task.trim() == "" ){
         throw "Task can't be null."
     } else {
         const taskData = await TaskModel.create({
             task: task,
-            userId: emailData._id
+            userId: userData._id
         });
+        console.log(taskData)
+        
 
         const newData = {
-          task: taskData.task,
+          task: taskData.task, taskId: taskData._id,  completed:taskData.isCompleted
         }
 
         res.json({

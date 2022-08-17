@@ -23,6 +23,7 @@ module.exports.validateAccessToken = (accessToken) => {
         const jwtVerification = jwt.verify(accessToken, process.env.ACCESS_TOKEN_SECRET);
         return jwtVerification.email;
     } catch (err) {
+        console.log(err)
         if(err.message == "jwt malformed") {
             throw 'Please provide a valid access token.'
         } else if (err.message == "jwt expired") {
