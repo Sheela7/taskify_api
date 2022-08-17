@@ -1,42 +1,48 @@
 const mongoose = require('mongoose');
 
-const taskSchema = new mongoose.Schema({
+const plannerSchema = new mongoose.Schema({
     
     title: {
         type: String,
+        max: 30,
         required: true
     },
 
-    isCompleted: {
-        type: Boolean,
-        default: false
+    note: {
+        type: String
     },
 
-    toDoDate: {
+    date: {
         type: Date,
         required: true
     },
 
-    reminder: {
-        type: Number,
-        required: true
+    startTime: {
+
     },
 
-    priority: {
+    endTime: {
+
+    },
+
+    reminder: {
+        type: Number,
+        default: 5
+    },
+
+    repeat: {
         type: String,
         lowercase: true,
-        enum: [
-            'low', 'medium', 'high'
-        ],
-        default: "low",
-        required: true
+        enum: [ "none", "daily", "weekly", "monthly" ],
+        default: "none"
     },
 
     userId: {
         type: mongoose.Schema.Types.ObjectId,
-        ref: "users",
+        ref: 'users',
         required: true
     }
+
 });
 
-module.exports = mongoose.model('tasks', taskSchema);
+module.exports = mongoose.model('plans', plannerSchema);

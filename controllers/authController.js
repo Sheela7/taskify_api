@@ -44,17 +44,15 @@ module.exports.signUpUser = async (req, res) => {
         // Send otp to email
         // const sendOtp = emailService.sendOtpMail(userData.email, userData.otp);
 
-        const newData = {
-            name: userData.name,
-            email: userData.email,
-            gender: userData.gender,
-            isVerified: userData.isVerified
-        }
-
         res.json({
             "status": "Success",
             "message": "Registration Complete",
-            "data": newData
+            "data": {
+                name: userData.name,
+                email: userData.email,
+                gender: userData.gender,
+                isVerified: userData.isVerified
+            }
         });
     }
 }

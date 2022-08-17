@@ -7,7 +7,7 @@ module.exports.taskController = async (req, res) => {
     
     // Taking user's entered data
     const task = req.body.title;
-    const eventDate = req.body.eventDate;
+    const toDoDate = req.body.toDoDate;
     const reminder = req.body.reminder;
     const priority = req.body.priority;
     const userEmail = req.body.email;
@@ -15,14 +15,14 @@ module.exports.taskController = async (req, res) => {
     const emailData = await userModel.findOne({email: userEmail});
 
     // Task Works
-    const errors =  validateToDoInput( task, eventDate, reminder, priority );
+    const errors =  validateToDoInput( task, toDoDate, reminder );
 
     if( errors.length > 0 ){
         throw errors;
     } else {
         const taskData = await TaskModel.create({
             title: task,
-            eventTime: eventDate,
+            toDoDate: toDoDate,
             reminder: reminder,
             priority: priority,
             userId: emailData._id
@@ -57,23 +57,19 @@ module.exports.getTask = async (req, res) => {
 
 
 // // CHECK if input is null or not
-const validateToDoInput = ( task, eventDate, reminder, priority ) => {
+const validateToDoInput = ( task, toDoDate, reminder ) => {
     let errors = [];
 
     if ( task == undefined || task == "" || task.trim() == "" ) {
-        errors.push("Task cannot be null.");
+        errors.push("Title is Required.");
     }
 
-    if ( eventDate == null || eventDate == "" ) {
-        errors.push("Event date cannot be null.");
+    if ( toDoDate == null || toDoDate == "" ) {
+        errors.push("Date is required.");
     }
 
     if ( reminder == null || reminder == "" ) {
         errors.push("Reminder cannot be null.");
-    }
-
-    if ( priority == undefined || priority == "" || priority.trim() == "" ) {
-        errors.push("Priority cannot be null.");
     }
 
     return errors;
