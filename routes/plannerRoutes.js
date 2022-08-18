@@ -4,5 +4,6 @@ const errorHandler = require('../middleware/error_handler.js');
 const tokenvalidator = require('../middleware/token_validator.js');
 
 router.post('/addplan', errorHandler(tokenvalidator.accessTokenValidator), errorHandler(controller.addPlan));
+router.get('/getplan', errorHandler(tokenvalidator.accessTokenValidator), errorHandler(controller.getPlans));
 
 module.exports = router;

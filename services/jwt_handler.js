@@ -4,7 +4,7 @@ module.exports.createNewAccessToken = (userEmail) => {
     const accessToken = jwt.sign(
         {"email": userEmail},
         process.env.ACCESS_TOKEN_SECRET,
-        {expiresIn: "1d"}
+        {expiresIn: "2d"}
         );
 
     return accessToken;
@@ -14,7 +14,7 @@ module.exports.createNewRefreshToken = (userEmail) => {
     const refreshToken = jwt.sign(
         {"email": userEmail},
         process.env.REFRESH_TOKEN_SECRET,
-        {expiresIn: "600s"}
+        {expiresIn: "4d"}
         );
 
     return refreshToken;

@@ -1,5 +1,5 @@
 const userModel = require(`../models/user.js`);
-const planner = require(`../models/planner.js`);
+const planModel = require(`../models/planner.js`);
 
 module.exports.addPlan = async (req, res) => {
 
@@ -23,7 +23,7 @@ module.exports.addPlan = async (req, res) => {
 
         const emailData = await userModel.findOne({ email: userEmail });
 
-        const planData = await planner.create({
+        const planData = await planModel.create({
             title: title,
             note: note,
             date: date,
@@ -63,4 +63,32 @@ const validateUserInputs = (title, date) => {
     // }
 
     return errors;
+}
+
+// Querying plans according to dates
+module.exports.getPlans = async (req, res) => {
+
+    const date = req.body.date;
+    const userEmail = req.body.email;
+
+    if ( date == null || date == "" ) {
+        throw "date is required.";
+    } else {
+
+        const emailData = await userModel.findOne({ email: userEmail });
+
+        const planData = await planModel.find({ 
+            userId: emailData._id, 
+            date: { 
+                $gte: new Date(new Date(date).setHours(00, 00, 00)),
+                $lte: new Date(new Date(date).setHours(23, 59, 59))
+            }
+        });
+
+        res.json({
+            "status": "success",
+            "message": `successfully listed the plans of ${date}`,
+            "data": planData
+        })
+    }
 }

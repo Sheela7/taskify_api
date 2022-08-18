@@ -1,5 +1,5 @@
 // IMPORTING MODULES
-const TaskModel = require('../models/to_do.js');
+const taskModel = require('../models/to_do.js');
 const userModel = require(`../models/user.js`);
 
 // CREATE A TASK FOR SPECIFIC USER
@@ -20,7 +20,7 @@ module.exports.taskController = async (req, res) => {
     if( errors.length > 0 ){
         throw errors;
     } else {
-        const taskData = await TaskModel.create({
+        const taskData = await taskModel.create({
             title: task,
             toDoDate: toDoDate,
             reminder: reminder,
@@ -44,15 +44,30 @@ module.exports.taskController = async (req, res) => {
 
 // LIST ALL THE TASK CREATED BY A USER
 module.exports.getTask = async (req, res) => {
-   
-    const userEmail = req.body.email;
-    const taskList = await TaskModel.find({email: userEmail});
 
-    res.json({
-        "status": "Success",
-        "message": "Task List extraction complete",
-        "data": taskList
-    })
+    const date = req.params.date;
+    const userEmail = req.body.email;
+
+    if ( date == null || date == "" ) {
+        throw "date is required.";
+    } else {
+
+        const emailData = await userModel.findOne({ email: userEmail });
+
+        const taskData = await taskModel.find({ 
+            userId: emailData._id, 
+            date: { 
+                $gte: new Date(new Date(date).setHours(00, 00, 00)),
+                $lte: new Date(new Date(date).setHours(23, 59, 59))
+            }
+        });
+
+        res.json({
+            "status": "success",
+            "message": `successfully listed the plans of ${date}`,
+            "data": taskData
+        });
+    }
 }
 
 
