@@ -12,17 +12,14 @@ const plannerSchema = new mongoose.Schema({
         type: String
     },
 
-    date: {
+    startTime: {
         type: Date,
         required: true
     },
 
-    startTime: {
-
-    },
-
     endTime: {
-
+        type: Date,
+        required: true
     },
 
     reminder: {

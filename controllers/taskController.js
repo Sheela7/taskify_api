@@ -1,8 +1,9 @@
-// IMPORTING MODULES
+// Importing all requiring modules.
 const taskModel = require('../models/to_do.js');
 const userModel = require(`../models/user.js`);
 
-// CREATE A TASK FOR SPECIFIC USER
+
+// Creates a task.
 module.exports.taskController = async (req, res) => {
     
     // Taking user's entered data
@@ -20,29 +21,38 @@ module.exports.taskController = async (req, res) => {
     if( errors.length > 0 ){
         throw errors;
     } else {
-        const taskData = await taskModel.create({
-            title: task,
-            toDoDate: toDoDate,
-            reminder: reminder,
-            priority: priority,
-            userId: emailData._id
-        });
 
-        res.json({
-            "status": "Success",
-            "message": "Task Added",
-            "data": {
-                "title": taskData.title,
-                "isComplete": taskData.isCompleted,
-                "eventDate": taskData.eventTime,
-                "reminder": `${taskData.reminder}min`,
-                "priority": taskData.priority
-            }
-        });
+        // Check if the task is already in database.
+        const dbTask = await taskModel.findOne({ userId: emailData._id , title: task.trim() });
+        if ( dbTask != null ) {
+            throw "This task already exist."
+        } else {
+
+            const taskData = await taskModel.create({
+                title: task,
+                toDoDate: toDoDate,
+                reminder: reminder,
+                priority: priority,
+                userId: emailData._id
+            });
+    
+            res.json({
+                "status": "Success",
+                "message": "Task Added",
+                "data": {
+                    "title": taskData.title,
+                    "isComplete": taskData.isCompleted,
+                    "eventDate": taskData.eventTime,
+                    "reminder": `${taskData.reminder}min`,
+                    "priority": taskData.priority
+                }
+            });
+
+        }
     }
 }
 
-// LIST ALL THE TASK CREATED BY A USER
+// List the plans of a task.
 module.exports.getTask = async (req, res) => {
 
     const date = req.params.date;
@@ -54,6 +64,7 @@ module.exports.getTask = async (req, res) => {
 
         const emailData = await userModel.findOne({ email: userEmail });
 
+        // Get a tasks for a user of specific date.
         const taskData = await taskModel.find({ 
             userId: emailData._id, 
             date: { 
@@ -70,22 +81,15 @@ module.exports.getTask = async (req, res) => {
     }
 }
 
-
-// // CHECK if input is null or not
+// Validates the input for a ToDo.
 const validateToDoInput = ( task, toDoDate, reminder ) => {
     let errors = [];
 
-    if ( task == undefined || task == "" || task.trim() == "" ) {
-        errors.push("Title is Required.");
-    }
+    if ( task == undefined || task == "" || task.trim() == "" ) errors.push("Title is Required.");
 
-    if ( toDoDate == null || toDoDate == "" ) {
-        errors.push("Date is required.");
-    }
+    if ( toDoDate == null || toDoDate == "" ) errors.push("Date is required.");
 
-    if ( reminder == null || reminder == "" ) {
-        errors.push("Reminder cannot be null.");
-    }
+    if ( reminder == null || reminder == "" ) errors.push("Reminder cannot be null.");
 
     return errors;
 }

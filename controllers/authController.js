@@ -1,11 +1,13 @@
+// Importing all the required modules.
 const userModel = require('../models/user.js');
 const otpService = require(`../services/otp.js`);
 const hashPassword = require(`../services/hash_password.js`);
 const token = require(`../services/jwt_handler.js`);
-const emailService = require(`../services/mail_service.js`);
+// const emailService = require(`../services/mail_service.js`);
 
+// Register a new user.
 module.exports.signUpUser = async (req, res) => {
-    // Taking User's data
+    // Taking User's Inputs
     const userName = req.body.name;
     const userEmail = req.body.email;
     const userPassword = req.body.password;
@@ -17,22 +19,19 @@ module.exports.signUpUser = async (req, res) => {
         throw errors;
     } else {
 
-        // Checking If Provided email already exist in DB 
+        // Checks if this email exists.
         const emailData = await userModel.findOne({ email: userEmail });
-        if (emailData != null) {
-            throw ('This Email already exist.');
-        }
+        if (emailData != null) throw ('This Email already exist.');
 
-        // Checking If Provided Name already exist in DB 
+        // Check if the user name already exits.
         const nameData = await userModel.findOne({ name: userName });
-        if (nameData != null) {
-            throw ('this name already exits');
-        }
+        if (nameData != null) throw ('this name already exits');
 
+        // Generates a hashed password and OTP for the given user password.
         const hashedPassword = await hashPassword.hashPasswordGenerator(userPassword);
         const generatedOTP = otpService.otpGenerator();
 
-        // Storing All data into database
+        // Creates a new user in database.
         const userData = await userModel.create({
             name: userName,
             email: userEmail,
@@ -57,8 +56,9 @@ module.exports.signUpUser = async (req, res) => {
     }
 }
 
-//====>>>> Verify email <<<<====//
+// Verify A User.
 module.exports.verifyEmail = async (req, res) => {
+
     // Taking User's Email and OTP
     const email = req.body.email;
     const OTP = req.body.otp;
@@ -71,17 +71,17 @@ module.exports.verifyEmail = async (req, res) => {
         // Check if Email matched with Database
         const emailData = await userModel.findOne({ email: email });
 
-        if (emailData == null) {
-            throw 'Your Email is not Registered.';
-        }
+        if (emailData == null) throw 'Your Email is not Registered.';
+        
         if (emailData.isVerified == true) {
-            throw "Your email is already verified."
+            throw "Your email is already verified.";
         }
         else {
-            // Checking if provided OTP match with OTP in DB
+            // Checks if the OTP matches the OTP in Database.
             if (OTP != emailData.otp) {
                 throw 'your otp is not match.';
             } else {
+                
                 await userModel.findByIdAndUpdate(emailData._id, {
                     isVerified: true
                 });
@@ -91,14 +91,15 @@ module.exports.verifyEmail = async (req, res) => {
                 "status": "Success",
                 "message": "Verification Complete.",
                 "data": null
-            })
+            });
         }
     }
 
 }
 
-//====>>>> Sign In <<<<====//
+// Sign in a User and Give them Access token.
 module.exports.signIn = async (req, res) => {
+    
     const email = req.body.email;
     const password = req.body.password;
 
@@ -110,18 +111,22 @@ module.exports.signIn = async (req, res) => {
 
         const emailData = await userModel.findOne({ email: email });
 
-        if (emailData == null) {
-            throw "This Email is not Registered.";
-        }
+        // Checks if this Email is registered.
+        if (emailData == null) throw "This Email is not Registered.";
 
+        //Check if this Email is verified.
         if (emailData.isVerified != true) {
             throw "This Email is not verified";
         } else {
+            
+            // Compares the password with the hashed password of the database.
             const isCorrectPassword = await hashPassword.comparePassword(password, emailData.password);
+            
             if (isCorrectPassword == false) {
                 throw "Your password is wrong.";
             } else {
 
+                // Creates a new access token and refresh token.
                 const accessToken = token.createNewAccessToken(emailData.email);
                 const refreshToken = token.createNewRefreshToken(emailData.email);
 
@@ -138,7 +143,7 @@ module.exports.signIn = async (req, res) => {
     }
 }
 
-// ACCESS TOKEN GENERATOR
+// Generate a new access token for a user.
 module.exports.accessTokenGenerator = async (req, res) => {
 
     const userEmail = req.body.email;
@@ -153,7 +158,7 @@ module.exports.accessTokenGenerator = async (req, res) => {
     })
 }
 
-// Checking Email
+// Checks if an email is valid.
 const checkEmailValidity = (email) => {
     const re = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
 
@@ -161,71 +166,61 @@ const checkEmailValidity = (email) => {
     return isEmailValid;
 }
 
-// Checking If User's Input is Null or not
+// Validates the sign up data and returns an array of errors if there is.
 const validateSignUpData = ( userName, userEmail, userPassword, userGender ) => {
     
     let errors = [];
 
     // CHecking if user entered any null data
-    if (userName == undefined || userName == "" || userName.trim() == "") {
-        errors.push('Please provide a user name.');
-    }
+    if (userName == undefined || userName == "" || userName.trim() == "") errors.push('Please provide a user name.');
 
     if (userEmail == undefined || userEmail == "" || userEmail.trim() == "") {
         errors.push('Please provide an email.');
     } else {
+        // Validates a user's email.
         const isEmailValid = checkEmailValidity(userEmail);
-        if (!isEmailValid) {
-            errors.push('Please provide a valid email.');
-        }
+        if (!isEmailValid) errors.push('Please provide a valid email.');
     }
 
-    if (userPassword == undefined || userPassword == "" || userPassword.trim() == "") {
-        errors.push('Please enter a password.');
-    }
+    if (userPassword == undefined || userPassword == "" || userPassword.trim() == "") errors.push('Please enter a password.');
 
-    if ( userGender == undefined || userGender == "" || userGender.trim() == "" ) {
-        errors.push("Please prove your gender.");
-    }
+    if ( userGender == undefined || userGender == "" || userGender.trim() == "" ) errors.push("Please prove your gender.");
 
     return errors;
-    
 }
 
+// Returns an array of error messages if user didn't give email and otp.
 const validateVerificationData = (email, OTP) => {
     
     let errors = [];
-
+    
     if (email == undefined || email == "") {
         errors.push('Please Provide your email.');
     } else {
-        const isEmailValid = checkEmailValidity(email);
 
-        if (!isEmailValid) {
-            errors.push('Please provide a valid email.');
-        }
+        const isEmailValid = checkEmailValidity(email);
+        if (!isEmailValid) errors.push('Please provide a valid email.');
+
     }
-    if (OTP == undefined || OTP == "") {
-        errors.push('Please Enter your OTP.');
-    }
+
+    if (OTP == undefined || OTP == "") errors.push('Please Enter your OTP.');
 
     return errors
 }
 
+// Validates the email and password.
 const checkSignInData = (email, password) => {
+    
     let errors = [];
+    
     if (email == undefined || email == "") {
         errors.push('Please provide a email.');
     } else {
         const isEmailValid = checkEmailValidity(email);
-        if (!isEmailValid) {
-            errors.push('Please provide a valid email.');
-        }
+        if (!isEmailValid) errors.push('Please provide a valid email.');
     }
 
-    if (password == undefined || password == "") {
-        errors.push('Please Enter your password.');
-    }
+    if (password == undefined || password == "") errors.push('Please Enter your password.');
 
     return errors;
-} 
+}

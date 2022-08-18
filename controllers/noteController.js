@@ -1,7 +1,9 @@
+// Importing all requiring modules.
 const userModel = require('../models/user.js');
 const noteModel = require(`../models/notes.js`);
 
 
+// Add a new note to a user
 module.exports.addNote = async (req, res) => {
 
     const noteTitle = req.body.title;
@@ -27,6 +29,21 @@ module.exports.addNote = async (req, res) => {
             "status": "success",
             "message": "successfully added note.",
             "data": noteData
-        })
+        });
     }
+}
+
+// recieves the notes of a user
+module.exports.getnotes = async (req, res) => {
+    const userEmail = req.params.email;
+
+    const emailData = await userModel.findOne({ email: userEmail });
+
+    const noteData = await noteModel.find({ userId: emailData._id });
+
+    res.json({
+        "status": "success",
+        "message": `successfully recieved notes of ${emailData.name}`,
+        "data": noteData
+    });
 }

@@ -1,4 +1,6 @@
 const nm = require('nodemailer');
+
+// Set default MAIL_SETTINGS
 const MAIL_SETTINGS = {
   service: 'gmail',
   auth: {
@@ -9,6 +11,7 @@ const MAIL_SETTINGS = {
 
 const transporter = nm.createTransport(MAIL_SETTINGS);
 
+// Register the OTP for HamroTask application.
 module.exports.sendOtpMail = async (email,otp) => {
   try {
     let info = await transporter.sendMail({

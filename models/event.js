@@ -13,14 +13,17 @@ const eventSchema = new mongoose.Schema({
 
     reminder: {
         type: Number,
+        default: 10
     },
 
     eventDate: {
         type: Date,
+        required: true
     },
 
     repeat: {
         type: Boolean,
+        default: false
     },
 
     userId: {
